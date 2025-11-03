@@ -1,0 +1,126 @@
+/* --- COULEURS ET TYPOGRAPHIE GLOBALES --- */
+:root {
+    --color-primary: #EAC964; 
+    --color-secondary: #2c2c2c; 
+    --color-background: #1a1a1a;
+    --color-text: #f0f0f0;
+    --color-success: #4CAF50;
+    --color-error: #f44336;
+}
+
+body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- CONTENEUR PRINCIPAL --- */
+.main-content-wrapper {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: var(--color-secondary);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+    color: var(--color-primary);
+    text-align: center;
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+/* --- FORMULAIRE ET CHAMPS --- */
+.recruitment-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.input-group {
+    flex: 1 1 calc(50% - 10px); /* 50% de la largeur pour deux colonnes */
+    display: flex;
+    flex-direction: column;
+}
+
+.full-width {
+    flex: 1 1 100%; /* Prend toute la largeur */
+}
+
+label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--color-text);
+}
+
+input:not([type="file"]), textarea, select {
+    padding: 12px;
+    border: 1px solid var(--color-primary);
+    border-radius: 5px;
+    background-color: #333;
+    color: var(--color-text);
+    transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #fff;
+    outline: none;
+}
+
+/* Style pour les fichiers (plus difficile à styler directement) */
+input[type="file"] {
+    border: none;
+    padding: 0;
+}
+
+/* --- BOUTON DE SOUMISSION --- */
+.gold-button {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+    border: none;
+    padding: 15px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+    flex: 1 1 100%;
+    margin-top: 20px;
+}
+
+.gold-button:hover:not(:disabled) {
+    background-color: #FFD700; /* Or légèrement plus clair */
+}
+
+.gold-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* --- MESSAGES DE VALIDATION --- */
+.message-validation {
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.message-validation.success {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.message-validation.error {
+    background-color: var(--color-error);
+    color: white;
+}
+
+.message-validation.info {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+}
