@@ -320,15 +320,17 @@
 
 
 
+
+
+
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
-import { createClient } from '@vercel/postgres'; // CLÉ: Utilisation de createClient
+import { createClient } from '@vercel/postgres'; 
 import nodemailer from 'nodemailer'; 
 import { Buffer } from 'buffer';
 
 // --- Configuration des Services ---
 
-// Vercel Postgres Client (Initialisation Lazy)
 let client: ReturnType<typeof createClient> | null = null;
 
 function getDbClient() {
@@ -336,7 +338,6 @@ function getDbClient() {
         if (!process.env.POSTGRES_URL) {
             throw new Error("POSTGRES_URL n'est pas défini.");
         }
-        // Le client est créé
         client = createClient({
             connectionString: process.env.POSTGRES_URL,
         });
@@ -351,21 +352,19 @@ const transporter = nodemailer.createTransport({
   secure: false, 
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS, // Mot de passe d'application correct (kwgzormasjrhpqwo)
+    pass: process.env.SMTP_PASS,
   },
 });
 
 export async function POST(req: NextRequest) {
-    // ÉTAPE CRUCIALE: Initialisation du Client APRES le début de la requête
     const currentClient = getDbClient(); 
 
     let cvUrl = ''; 
     let data;
 
     try {
-        // 1. TRAITEMENT DES DONNÉES ET FICHIER
+        // 1. TRAITEMENT DES DONNÉES ET FICHIER (Inchangé)
         const formData = await req.formData(); 
-
         data = {
             nom: formData.get('nom') as string,
             prenom: formData.get('prenom') as string,
@@ -374,18 +373,15 @@ export async function POST(req: NextRequest) {
             poste: formData.get('poste_candidature') as string, 
             message: formData.get('message_candidature') as string,
         };
-
         const cvFile = formData.get('cv_file') as File;
-        
         if (!cvFile || cvFile.size === 0 || !cvFile.name) {
             return NextResponse.json({ success: false, message: 'Le CV est manquant ou vide.' }, { status: 400 });
         }
-        
         const fileBuffer = await cvFile.arrayBuffer(); 
         const nodeBuffer = Buffer.from(fileBuffer);
 
         
-        // 2. UPLOAD DU CV VERS VERCEL BLOB
+        // 2. UPLOAD DU CV VERS VERCEL BLOB (Inchangé)
         try {
             const cvFileName = `${data.nom}_${data.prenom}_${Date.now()}_${cvFile.name}`;
             const blob = await put(`cvs/${cvFileName}`, nodeBuffer, {
@@ -402,33 +398,31 @@ export async function POST(req: NextRequest) {
         }
 
 
-        // 3. ENREGISTREMENT DANS LA BASE DE DONNÉES POSTGRES
-        let connection;
+        // 3. ENREGISTREMENT DANS LA BASE DE DONNÉES POSTGRES (CORRIGÉ)
         try {
-            // Connexion explicite (nécessaire pour createClient)
-            connection = await currentClient.connect(); 
-
-            // CLÉ: Utilisation de la méthode query() standard (pour createClient)
-            await connection.query(
-                `INSERT INTO candidatures (nom, prenom, email, telephone, poste, message, cv_url)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)`, 
-                [data.nom, data.prenom, data.email, data.telephone, data.poste, data.message, cvUrl]
-            );
+            // Utilisation simplifiée de .sql pour createClient, plus besoin de connect/release
+            await currentClient.sql`
+              INSERT INTO candidatures (nom, prenom, email, telephone, poste, message, cv_url)
+              VALUES (
+                ${data.nom}, 
+                ${data.prenom}, 
+                ${data.email}, 
+                ${data.telephone}, 
+                ${data.poste}, 
+                ${data.message}, 
+                ${cvUrl}
+              );
+            `;
         } catch (error) {
             console.error('ERREUR POSTGRES (CODE 500):', error);
             return NextResponse.json({ 
                 success: false, 
                 message: `Échec de l'enregistrement en BD. (Vérifiez POSTGRES_URL)`, 
             }, { status: 500 });
-        } finally {
-            // Libérer la connexion
-            if (connection) {
-                connection.release();
-            }
         }
 
 
-        // 4. ENVOI DE L'EMAIL DE NOTIFICATION
+        // 4. ENVOI DE L'EMAIL DE NOTIFICATION (Inchangé)
         try {
             const mailOptions = {
                 from: process.env.SMTP_USER,
@@ -453,7 +447,7 @@ export async function POST(req: NextRequest) {
             }, { status: 500 });
         }
 
-        // 5. Réponse de Succès Finale
+        // 5. Réponse de Succès Finale (Inchangé)
         return NextResponse.json({ 
             success: true, 
             message: `Félicitations ${data.prenom}! Votre candidature a été reçue et enregistrée.` 
